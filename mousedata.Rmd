@@ -1,0 +1,64 @@
+---
+title: "Chi square test for marker segregation mouse data"
+author: "Akinyemi Aanuoluwapo Mike"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+install.packages("readxl") ## instal package
+
+library(readxl)
+
+data <- read.csv("C:/Users/USER/Downloads/mouse.csv")
+
+head(data)
+
+set.seed(123)  # Ensures reproducibility
+Mrk1 <- sample(x = c(0, 1), size = 10, replace = TRUE, prob = c(0.5, 0.5))
+table(Mrk1)
+
+M <- 1000 # number of markers
+N <- 100 # number of individuals
+geno <- matrix(data = NA, nrow = N, ncol = M) # initializes an empty matrix to store the results
+colnames(geno) <- paste0("Mrk", 1:M)
+rownames(geno) <- paste0("Ind", 1:N)
+geno[c(1:5), c(1:10)]
+
+for (m in 1:M) {
+  geno[,m] <- sample(x = c(0, 1), size = N, replace = TRUE, prob = c(0.5, 0.5))
+}
+geno[c(1:5), c(1:10)] # shows the 5 first rows and 10 first columns
+
+image(geno, ylab = "Markers", xlab = "Individuals", col = c("yellow", "blue"))
+
+
+exp <- c(0.5, 0.5) # the expected proportion between categories in a BC
+p.value <- c() # initializes an object to store the P-values
+
+for (m in 1:M) {
+  obs <- table(geno[,m])
+  p.value[m] <- chisq.test(x = obs, p = exp)$p.value
+}
+plot(sort(p.value)) # plot of ordered p-values
+abline(h = 0.05, col = "red")
+legend("topleft", legend=c("alpha = 0.05"), col=c("red"), lty=1)
+
+table(p.value < 0.05)
+
+## Bonferroni correction
+
+plot(sort(p.value))
+abline(h = c(0.05, 0.05/M), col = c("red", "blue"))
+legend("topleft", legend=c("alpha = 0.05", "alpha* = 0.05/M"), col=c("red", "blue"), lty=1)
+
+
+table(p.value < 0.05/M)
+
+
+
